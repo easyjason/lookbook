@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>룩북 조합 생성기</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/892/892458.png" type="image/png">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f7f7f7;
+      text-align: center;
+      padding: 30px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    .upload-section {
+      margin-bottom: 20px;
+    }
+    .upload-box {
+      margin: 10px;
+    }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 60px;
+      margin-top: 40px;
+    }
+    .look {
+      background-color: white;
+      padding: 30px;
+      border: 1px solid #ccc;
+      position: relative;
+      width: 350px;
+      height: 600px;
+      box-sizing: border-box;
+    }
+    .main-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    .main-wrapper img {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 200px;
+    }
+    .main-wrapper img[alt="상의"] {
+      top: 20px;
+      z-index: 2;
+    }
+    .main-wrapper img[alt="하의"] {
+      top: 160px;
+      z-index: 1;
+      max-width: 160px;
+    }
+    .main-wrapper img[alt="신발"] {
+      top: 360px;
+      z-index: 0;
+    }
+    .main-wrapper img[alt="시계"] {
+      top: 100px;
+      left: 5%;
+      transform: none;
+      width: 80px;
+      z-index: 3;
+    }
+    .main-wrapper img[alt="가방"] {
+      top: 40px;
+      left: auto;
+      right: 15%;
+      transform: none;
+      width: 100px;
+      z-index: 3;
+    }
+    .look p {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      font-weight: bold;
+    }
+    .favorite-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: #ff4081;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      font-size: 18px;
+      cursor: pointer;
+      z-index: 4;
+    }
+    .favorited {
+      background: #4caf50 !important;
+    }
+    .favorites-section {
+      margin-top: 50px;
+    }
+    .favorites-section h2 {
+      margin-bottom: 20px;
+    }
+    .clear-btn {
+      margin-bottom: 20px;
+      padding: 8px 16px;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    input[type="file"] {
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>👕 룩북 조합 생성기 👖</h1>
+  <div class="upload-section">
+    <div class="upload-box">
+      <label>상의 이미지: </label>
+      <input type="file" accept="image/*" multiple onchange="handleUpload(event, 'tops')">
+    </div>
+    <div class="upload-box">
+      <label>하의 이미지: </label>
+      <input type="file" accept="image/*" multiple onchange="handleUpload(event, 'bottoms')">
+    </div>
+    <div class="upload-box">
+      <label>신발 이미지: </label>
+      <input type="file" accept="image/*" multiple onchange="handleUpload(event, 'shoes')">
+    </div>
+    <div class="upload-box">
+      <label>시계 이미지: </label>
+      <input type="file" accept="image/*" multiple onchange="handleUpload(event, 'watches')">
+    </div>
+    <div class="upload-box">
+      <label>가방 이미지: </label>
+      <input type="file" accept="image/*" multiple onchange="handleUpload(event, 'bags')">
+    </div>
+  </div>
+  <div class="grid" id="lookbook-grid"></div>
+  <div class="favorites-section">
+    <h2>❤️ 내가 고른 룩북</h2>
+    <button class="clear-btn" onclick="clearFavorites()">전체 초기화</button>
+    <div class="grid" id="favorites-grid"></div>
+  </div>
+  <script>
+    const imageSets = { tops: [], bottoms: [], shoes: [], watches: [], bags: [] };
+    function handleUpload(event, category) {
+      const files = Array.from(event.target.files);
+      imageSets[category] = [];
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          imageSets[category].push(e.target.result);
+          if (category === 'bags') generateLookbook();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    function generateLookbook() {
+      const grid = document.getElementById('lookbook-grid');
+      grid.innerHTML = '';
+      let count = 1;
+      imageSets.tops.forEach(top => {
+        imageSets.bottoms.forEach(bottom => {
+          imageSets.shoes.forEach(shoe => {
+            imageSets.watches.forEach(watch => {
+              imageSets.bags.forEach(bag => {
+                const div = document.createElement('div');
+                div.className = 'look';
+                const lookID = `look-${count}`;
+                div.dataset.lookId = lookID;
+                div.innerHTML = `
+                  <button class="favorite-btn" onclick="toggleFavorite(this, '${lookID}')">❤</button>
+                  <div class="main-wrapper">
+                    <img src="${shoe}" alt="신발">
+                    <img src="${bottom}" alt="하의">
+                    <img src="${top}" alt="상의">
+                    <img src="${watch}" alt="시계">
+                    <img src="${bag}" alt="가방">
+                    <p>Look ${count++}</p>
+                  </div>
+                `;
+                grid.appendChild(div);
+              });
+            });
+          });
+        });
+      });
+    }
+    function toggleFavorite(button, lookID) {
+      const lookElement = button.parentElement;
+      const favoritesGrid = document.getElementById('favorites-grid');
+      if (button.classList.contains('favorited')) {
+        button.classList.remove('favorited');
+        const fav = favoritesGrid.querySelector(`[data-look-id="${lookID}"]`);
+        if (fav) fav.remove();
+      } else {
+        button.classList.add('favorited');
+        const clone = lookElement.cloneNode(true);
+        clone.querySelector('.favorite-btn')?.remove();
+        clone.dataset.lookId = lookID;
+        favoritesGrid.appendChild(clone);
+      }
+    }
+    function clearFavorites() {
+      document.getElementById('favorites-grid').innerHTML = '';
+      document.querySelectorAll('.favorited').forEach(btn => btn.classList.remove('favorited'));
+    }
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(function(reg) { console.log('Service Worker 등록 성공:', reg); })
+        .catch(function(err) { console.log('Service Worker 등록 실패:', err); });
+    }
+  </script>
+</body>
+</html>
